@@ -1,0 +1,160 @@
+Table Tenants {
+  Id uuid [pk]
+  Name varchar(150) [not null]
+  Slug varchar(100) [not null, unique]
+  Category varchar(30) [not null, note: 'Barber, DentalClinic, BeautySalon, Other']
+  Address varchar(300)
+  Phone varchar(30)
+  LogoUrl varchar(500)
+  BrandColor varchar(7)
+  TimeZone varchar(50) [not null, default: 'Europe/Istanbul']
+  SlotIntervalMinutes int [not null, default: 30]
+  BookingWindowDays int [not null, default: 60]
+  MinNoticeHours int [not null, default: 2]
+  CancellationHours int [not null, default: 24]
+  AutoConfirm boolean [not null, default: false]
+  IsDeleted boolean [not null, default: false]
+  CreatedAt datetimeoffset [not null]
+  UpdatedAt datetimeoffset
+}
+
+Table Users {
+  Id uuid [pk]
+  TenantId uuid [null, note: 'Müşteride boş']
+  FullName varchar(150) [not null]
+  Email varchar(256) [not null, unique]
+  PhoneNumber varchar(30)
+  PasswordHash varchar(500) [not null]
+  Role varchar(20) [not null, note: 'Customer, Owner, Staff, PlatformAdmin']
+  CreatedAt datetimeoffset [not null]
+  UpdatedAt datetimeoffset
+}
+
+Table Services {
+  Id uuid [pk]
+  TenantId uuid [not null]
+  Name varchar(150) [not null]
+  Description varchar(1000)
+  DurationMinutes int [not null]
+  BufferMinutes int [not null, default: 0]
+  Price decimal(10,2) [not null]
+  IsActive boolean [not null, default: true]
+  IsDeleted boolean [not null, default: false]
+  CreatedAt datetimeoffset [not null]
+  UpdatedAt datetimeoffset
+}
+
+Table Staff {
+  Id uuid [pk]
+  TenantId uuid [not null]
+  UserId uuid [null, note: 'Çalışanın hesabı olmayabilir']
+  DisplayName varchar(150) [not null]
+  IsActive boolean [not null, default: true]
+  IsDeleted boolean [not null, default: false]
+  CreatedAt datetimeoffset [not null]
+  UpdatedAt datetimeoffset
+}
+
+Table StaffServices {
+  StaffId uuid [not null]
+  ServiceId uuid [not null]
+  TenantId uuid [not null]
+  CreatedAt datetimeoffset [not null]
+
+  indexes {
+    (StaffId, ServiceId) [pk]
+  }
+}
+
+Table WorkingHours {
+  Id uuid [pk]
+  TenantId uuid [not null]
+  StaffId uuid [not null]
+  DayOfWeek tinyint [not null, note: '0=Pazar ... 6=Cumartesi']
+  StartTime time [not null]
+  EndTime time [not null]
+  BreakStart time
+  BreakEnd time
+  CreatedAt datetimeoffset [not null]
+  UpdatedAt datetimeoffset
+
+  indexes {
+    (StaffId, DayOfWeek) [unique]
+  }
+}
+
+Table TimeOffs {
+  Id uuid [pk]
+  TenantId uuid [not null]
+  StaffId uuid [not null]
+  StartDate datetimeoffset [not null]
+  EndDate datetimeoffset [not null]
+  Reason varchar(300)
+  CreatedAt datetimeoffset [not null]
+  UpdatedAt datetimeoffset
+}
+
+Table Appointments {
+  Id uuid [pk]
+  TenantId uuid [not null]
+  CustomerId uuid [not null]
+  ServiceId uuid [not null]
+  StaffId uuid [not null]
+  StartTime datetimeoffset [not null, note: 'UTC']
+  EndTime datetimeoffset [not null, note: 'UTC']
+  Status varchar(30) [not null, note: 'Pending, Confirmed, Rejected, Completed, NoShow, CancelledByCustomer, CancelledByOwner, Expired']
+  Note varchar(1000)
+  RejectionReason varchar(500)
+  SeenAt datetimeoffset
+  RowVersion binary(8)
+  IdempotencyKey varchar(100)
+  CreatedAt datetimeoffset [not null]
+  UpdatedAt datetimeoffset
+
+  indexes {
+    (TenantId, StaffId, StartTime)
+    (TenantId, Status, SeenAt)
+    (CustomerId, StartTime)
+    (TenantId, IdempotencyKey) [unique]
+  }
+}
+
+Table Notifications {
+  Id uuid [pk]
+  TenantId uuid [not null]
+  UserId uuid [not null]
+  AppointmentId uuid
+  Type varchar(50) [not null, note: 'AppointmentCreated, Confirmed, Rejected, Cancelled, Reminder']
+  Channel varchar(20) [not null, note: 'Email, InApp']
+  Payload text
+  Status varchar(20) [not null, note: 'Pending, Sent, Failed']
+  RetryCount int [not null, default: 0]
+  ProcessedAt datetimeoffset
+  CreatedAt datetimeoffset [not null]
+}
+
+Table RefreshTokens {
+  Id uuid [pk]
+  UserId uuid [not null]
+  TokenHash varchar(200) [not null]
+  ExpiresAt datetimeoffset [not null]
+  RevokedAt datetimeoffset
+  ReplacedByTokenId uuid
+  CreatedAt datetimeoffset [not null]
+}
+
+Ref: Users.TenantId > Tenants.Id
+Ref: Services.TenantId > Tenants.Id
+Ref: Staff.TenantId > Tenants.Id
+Ref: Staff.UserId > Users.Id
+Ref: StaffServices.StaffId > Staff.Id
+Ref: StaffServices.ServiceId > Services.Id
+Ref: WorkingHours.StaffId > Staff.Id
+Ref: TimeOffs.StaffId > Staff.Id
+Ref: Appointments.TenantId > Tenants.Id
+Ref: Appointments.CustomerId > Users.Id
+Ref: Appointments.ServiceId > Services.Id
+Ref: Appointments.StaffId > Staff.Id
+Ref: Notifications.UserId > Users.Id
+Ref: Notifications.AppointmentId > Appointments.Id
+Ref: RefreshTokens.UserId > Users.Id
