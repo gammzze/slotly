@@ -1,0 +1,31 @@
+# .NET
+bin/
+obj/
+*.user
+.vs/
+*.suo
+TestResults/
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+dist/
+
+# Secrets & ortam değişkenleri
+.env
+.env.*
+!.env.example
+appsettings.Development.json
+appsettings.Local.json
+
+# IDE / OS
+.idea/
+.vscode/*
+!.vscode/extensions.json
+.DS_Store
+Thumbs.db
+
+# Loglar
+*.log
+logs/
