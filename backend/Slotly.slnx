@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="Slotly.Api/Slotly.Api.csproj" />
+  <Project Path="Slotly.Application/Slotly.Application.csproj" />
+  <Project Path="Slotly.Domain/Slotly.Domain.csproj" />
+  <Project Path="Slotly.Infrastructure/Slotly.Infrastructure.csproj" />
+  <Project Path="Slotly.UnitTests/Slotly.UnitTests.csproj" />
+</Solution>
