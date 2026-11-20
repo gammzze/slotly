@@ -1,3 +1,4 @@
+using Slotly.Api.Middleware;
 using Microsoft.EntityFrameworkCore;
 using Slotly.Infrastructure.Persistence;
 using Slotly.Infrastructure;
@@ -10,6 +11,8 @@ builder.Services.AddControllers();
 builder.Services.AddInfrastructure(builder.Configuration);
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 var app = builder.Build();
 
@@ -26,6 +29,8 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+
+app.UseExceptionHandler();
 
 app.UseHttpsRedirection();
 
