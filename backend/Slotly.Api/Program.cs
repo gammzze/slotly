@@ -1,9 +1,14 @@
+using Serilog;
 using Slotly.Api.Middleware;
 using Microsoft.EntityFrameworkCore;
 using Slotly.Infrastructure.Persistence;
 using Slotly.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog((context, services, configuration) => configuration
+    .ReadFrom.Configuration(context.Configuration)
+    .ReadFrom.Services(services));
 
 // Add services to the container.
 
@@ -30,7 +35,10 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseExceptionHandler();
+
+app.UseSerilogRequestLogging();
 
 app.UseHttpsRedirection();
 
