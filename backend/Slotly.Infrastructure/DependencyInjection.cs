@@ -17,6 +17,8 @@ public static class DependencyInjection
         services.AddDbContext<AppDbContext>(options =>
             options.UseSqlServer(connectionString));
 
+        services.AddScoped<Slotly.Application.Common.IAppDbContext>(sp => sp.GetRequiredService<AppDbContext>());
+
         return services;
     }
 }
